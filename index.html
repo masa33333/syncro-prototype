@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNCRO - Prototype</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>SYNCRO</h1>
+            <p class="target-label">今回のセリフ</p>
+            <h2 class="target-sentence">"Excuse me."</h2>
+            <div id="fullRunList" class="full-run-list hidden"></div>
+        </header>
+
+        <main>
+            <!-- 1. PRACTICE SCREEN -->
+            <section id="practice-screen" class="screen-container">
+                <div class="practice-card">
+                    <button id="btnPlayModel" class="btn btn-secondary btn-large">🔊 手本を聞く</button>
+                    <div id="modelVoiceLabel" class="voice-label-simple">Detecting Voice...</div>
+                </div>
+
+                <div class="practice-card">
+                    <button id="btnRecord" class="btn btn-primary btn-large">🎤 Start</button>
+                    <button id="btnStop" class="btn btn-danger btn-large hidden">⏹ Stop</button>
+                    <p id="statusText" class="status-text">Ready</p>
+                </div>
+            </section>
+
+                        <!-- 2. RESULT SCREEN -->
+            <section id="result-screen" class="screen-container hidden">
+                <div id="result-header" class="result-header">
+                    <h3 id="pass-fail-message"></h3>
+                    <p id="tier-badge"></p>
+                </div>
+
+                <div id="radarWrapper" class="radar-wrapper">
+                    <svg id="radarSVG" viewBox="0 0 300 300"></svg>
+                    <div class="total-score-overlay">
+                        <span id="scoreTotalValue" class="total-val">--</span>
+                        <span class="total-label">TOTAL</span>
+                    </div>
+                </div>
+                
+                <div id="fullRunPlaybackControls" class="modal-controls hidden" style="margin-bottom: 15px;">
+  <button id="btnFRPlayModel" class="btn btn-secondary btn-sm">🔊 手本を聞く</button>
+  <button id="btnFRPlayUser" class="btn btn-primary btn-sm">▶ 自分の録音を聞く</button>
+</div>
+
+<div id="scoreCardsContainer" class="score-cards-container">
+  <!-- Cards will be injected by JS -->
+</div>
+
+                <p id="progression-status" class="progression-status"></p>
+                <button id="btnRetry" class="btn btn-secondary">↺ もう一度挑戦</button>
+                <button id="btnNext" class="btn btn-primary hidden">次のセリフへ進む →</button>
+            </section>
+
+            <!-- Level Clear Overlay -->
+            <div id="levelClearOverlay" class="modal hidden">
+                <div class="modal-content">
+                    <h2 id="levelClearTitle" style="color: var(--primary); margin-bottom: 20px; line-height: 1.4;"></h2>
+                    <button id="btnLevelClearNext" class="btn btn-primary">通し読みへ</button>
+                </div>
+            </div>
+
+
+            <!-- Detail Modal -->
+            <div id="detailModal" class="modal hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modalTitle">Category</h2>
+                        <button id="btnCloseModal" class="btn-close">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modalTargetSentence" class="modal-target"></p>
+                        <div class="modal-controls">
+                            <button id="btnModalPlayModel" class="btn btn-secondary btn-sm">🔊 手本を聞く</button>
+                            <button id="btnModalPlayUser" class="btn btn-primary btn-sm">▶ 自分の録音を聞く</button>
+                        </div>
+                        <div id="modalPronunciationTargets" class="pronunciation-targets hidden"></div>
+                        <div class="feedback-section">
+                            <h4 class="feedback-label">良かった点</h4>
+                            <p id="modalFeedback" class="modal-feedback"></p>
+                            <h4 class="feedback-label">改善ポイント</h4>
+                            <p id="modalAdvice" class="modal-advice"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level Clear Overlay -->
+            <div id="levelClearOverlay" class="modal hidden">
+                <div class="modal-content">
+                    <h2 id="levelClearTitle" style="color: var(--primary); margin-bottom: 20px; line-height: 1.4;"></h2>
+                    <button id="btnLevelClearNext" class="btn btn-primary">通し読みへ</button>
+                </div>
+            </div>
+
+            <!-- Celebration Overlay -->
+            <div id="celebrationOverlay" class="celebration-overlay hidden">
+                <div id="celebrationMedal" class="medal-icon hidden">
+                    <div class="medal-ribbon"></div>
+                </div>
+                <h2 id="celebrationText" class="celebration-text"></h2>
+                <div id="particlesContainer" class="particles-container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
