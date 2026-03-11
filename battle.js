@@ -1,3 +1,4 @@
+console.log("USING battle.js 2026-03-11 test");
 // --- Mock Data: Sentences & their specific transcripts ---
 const BATTLE_ROUNDS = [
     {
@@ -118,9 +119,8 @@ btnRecord.onclick = () => {
     
     playRealAudio(
         () => { // onSuccess
-            startCountdown(() => {
-                startRecording();
-            });
+            // Immediately start recording after audio finishes
+            startRecording();
         },
         (error) => { // onError
             alert(`Audio playback failed: ${error}. Please try again.`);
@@ -275,23 +275,6 @@ async function playRealAudio(onComplete, onError) {
     }
 }
 
-function startCountdown(callback) {
-    countdownOverlay.classList.remove('hidden');
-    let count = 3;
-    
-    const tick = () => {
-        countdownNum.innerText = count;
-        if (count > 0) {
-            count--;
-            setTimeout(tick, 1000);
-        } else {
-            countdownOverlay.classList.add('hidden');
-            callback();
-        }
-    };
-    tick();
-}
-
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -335,7 +318,7 @@ async function startRecording() {
         recordingArea.classList.add('pulsing');
         btnStop.classList.remove('hidden');
         btnStop.disabled = false;
-        statusText.innerText = "Speak Now!";
+        statusText.innerText = "Recording...";
         console.log("[Mic] Recording started...");
         mediaRecorder.start();
 
@@ -436,11 +419,9 @@ function renderDiff(diff) {
         const span = document.createElement('span');
         span.className = `diff-token diff-${token.status}`;
 
-        // correct のときだけ正解語を見せる
         if (token.status === 'correct') {
             span.textContent = token.word;
         } else {
-            // wrong も missing も答えは見せず、下線だけ
             span.innerHTML = '&nbsp;';
         }
 

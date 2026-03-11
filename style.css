@@ -265,20 +265,19 @@ h1 { margin: 0; letter-spacing: 1px; }
   color: #19f28f;
 }
 
-.diff-wrong,
-.diff-missing {
-  width: 2.2em;          /* ← ここを大きくすると線が長くなる */
+.diff-missing,
+.diff-wrong {
+  width: 2.4em;
   text-align: center;
+  color: transparent;
+}
+
+.diff-missing {
+  border-bottom: 3px solid #7a7a7a;
 }
 
 .diff-wrong {
-  color: #ff335f;
   border-bottom: 3px solid #ff335f;
-}
-
-.diff-missing {
-  color: transparent;
-  border-bottom: 3px solid #777;
 }
 
 .recognized-text {

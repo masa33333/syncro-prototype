@@ -1,3 +1,4 @@
+
 :root {
     --bg-color: #121212;
     --card-bg: #1e1e1e;
@@ -219,4 +220,28 @@ h2 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
     0% { transform: scale(0.5); opacity: 0; }
     50% { transform: scale(1.1); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
+}
+.diff-token {
+  display: inline-block !important;
+  margin-right: 0.35em !important;
+  font-weight: 700 !important;
+  font-size: 1.2em !important;
+  min-width: 2.8em !important;
+  text-align: center !important;
+  vertical-align: bottom !important;
+}
+
+.diff-token.diff-correct {
+  color: #19f28f !important;
+  border-bottom: none !important;
+}
+
+.diff-token.diff-missing {
+  color: transparent !important;
+  border-bottom: 3px solid #7a7a7a !important;
+}
+
+.diff-token.diff-wrong {
+  color: transparent !important;
+  border-bottom: 3px solid #ff335f !important;
 }
