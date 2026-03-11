@@ -47,6 +47,13 @@ h1 { margin: 0; letter-spacing: 1px; }
     font-weight: bold;
 }
 
+.blind-text {
+    color: transparent;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    user-select: none;
+    transition: text-shadow 0.3s;
+}
+
 .full-run-list {
     text-align: left;
     background: rgba(255,255,255,0.05);
@@ -231,6 +238,54 @@ h1 { margin: 0; letter-spacing: 1px; }
     color: var(--text-main);
     line-height: 1;
     text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+/* Diff Display */
+.diff-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+.diff-token {
+  display: inline-block;
+  margin-right: 0.35em;
+  font-weight: 700;
+  font-size: 1.2em;
+}
+
+.diff-correct {
+  color: #19f28f;
+}
+
+.diff-wrong,
+.diff-missing {
+  width: 2.2em;          /* ← ここを大きくすると線が長くなる */
+  text-align: center;
+}
+
+.diff-wrong {
+  color: #ff335f;
+  border-bottom: 3px solid #ff335f;
+}
+
+.diff-missing {
+  color: transparent;
+  border-bottom: 3px solid #777;
+}
+
+.recognized-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 0 10px 0;
+    font-style: italic;
 }
 
 /* Compact layout for full run total score */

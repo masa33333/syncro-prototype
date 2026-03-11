@@ -1,0 +1,22 @@
+[
+  {
+    "id": "s001",
+    "text": "Excuse me.",
+    "audioUrl": "assets/audio/excuse_me.mp3",
+    "level": 1,
+    "tags": ["basic"],
+    "meta": {
+      "wordCount": 2
+    }
+  },
+  {
+    "id": "s002",
+    "text": "I'm here for sightseeing.",
+    "audioUrl": "assets/audio/im_here_for_sightseeing.mp3",
+    "level": 2,
+    "tags": ["travel"],
+    "meta": {
+      "wordCount": 5
+    }
+  }
+]

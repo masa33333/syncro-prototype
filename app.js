@@ -1,5 +1,6 @@
 // --- Configuration ---
-const SENTENCES = [
+// This will be populated from sentences.json
+let SENTENCES = [
     { 
         text: "Excuse me.", 
         passed: false,
@@ -213,6 +214,9 @@ const fullRunList = document.getElementById('fullRunList');
 const scoreTotalValue = document.getElementById('scoreTotalValue');
 const scoreCardsContainer = document.getElementById('scoreCardsContainer');
 const detailModal = document.getElementById('detailModal');
+const diffDisplay = document.getElementById('diffDisplay');
+const diffPreviewContainer = document.getElementById('diffPreviewContainer');
+const recognizedTextDisplay = document.getElementById('recognizedTextDisplay');
 const modalTitle = document.getElementById('modalTitle');
 const radarWrapper = document.getElementById('radarWrapper');
 const modalFeedback = document.getElementById('modalFeedback');
@@ -224,6 +228,7 @@ const btnNext = document.getElementById('btnNext');
 const btnModalPlayUser = document.getElementById('btnModalPlayUser');
 const btnCloseModal = document.getElementById('btnCloseModal');
 const levelClearOverlay = document.getElementById('levelClearOverlay');
+const countdownOverlay = document.getElementById('countdownOverlay');
 const levelClearTitle = document.getElementById('levelClearTitle');
 const btnLevelClearNext = document.getElementById('btnLevelClearNext');
 const fullRunPlaybackControls = document.getElementById('fullRunPlaybackControls');
@@ -240,31 +245,49 @@ let audioCtx;
 let microphone;
 let isRecording = false;
 let mediaRecorder;
+let speechRecognition;
+let recognizedText = "";
 let audioChunks = [];
 let userAudioUrl = null;
 let currentResults = {};
 let currentSentenceIndex = 0;
 let isFullRunChallenge = false;
+let isBattleMode = true;
 
 // Voice State
 let selectedVoice = null;
+let currentAudio = null;
 
 // --- Initialization ---
 
-initVoiceSelection();
-resetUI(); // Ensure UI is synced with initial state
+// initVoiceSelection(); // Removed for Battle Mode MVP
+loadSentences();
+
+async function loadSentences() {
+    try {
+        const response = await fetch('sentences.json');
+        SENTENCES = await response.json();
+        console.log("Sentences loaded:", SENTENCES);
+        resetUI();
+    } catch (error) {
+        console.error("Failed to load sentences:", error);
+        statusText.innerText = "Error loading data";
+        statusText.style.color = "#FF1744";
+    }
+}
 
 // --- Event Listeners ---
 
-btnPlayModel.addEventListener('click', () => {
-    console.log("[UI] 'Listen to Model' clicked");
+btnPlayModel.onclick = () => {
+    console.log("[UI] btnPlayModel clicked");
     playModelAudio();
-});
+};
 
-btnRecord.addEventListener('click', async () => {
-    console.log("[UI] 'Record' clicked");
-    await startRecordingProcess();
-});
+btnRecord.onclick = async () => {
+    // For this Step 1 MVP, we disable recording in Battle Mode
+    console.log("[UI] 'Record' clicked (Disabled for Step 1)");
+    alert("Recording is disabled in this step.");
+};
 
 btnStop.addEventListener('click', () => {
     console.log("[UI] 'Stop' clicked");
@@ -289,17 +312,17 @@ btnLevelClearNext.addEventListener('click', () => {
     startFullRun();
 });
 
-btnFRPlayModel.addEventListener('click', () => {
-    console.log("[UI] Full Run 'Listen to Model' clicked");
+btnFRPlayModel.onclick = () => {
+    console.log("[UI] btnFRPlayModel clicked");
     playModelAudio();
-});
+};
 
-btnFRPlayUser.addEventListener('click', () => {
+btnFRPlayUser.onclick = () => {
     console.log("[UI] Full Run 'Listen to User' clicked");
     if (userAudioUrl) {
         new Audio(userAudioUrl).play();
     }
-});
+};
 
 // Add retry button logic for full run clear screen if we add one
 // For now, we reuse the overlay but might need custom buttons for "Scene Clear"
@@ -309,42 +332,78 @@ btnFRPlayUser.addEventListener('click', () => {
 // --- Core Functions ---
 
 function playModelAudio() {
-    // 1. Cancel any ongoing speech
+    console.log("[Audio] playModelAudio called");
+
+    // Battle Mode: Use fixed audio file
+    if (isBattleMode) {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+
+        const sentence = SENTENCES[currentSentenceIndex];
+        if (sentence && sentence.audioUrl) {
+            console.log(`[Audio] Playing file: ${sentence.audioUrl}`);
+            currentAudio = new Audio(sentence.audioUrl);
+            currentAudio.play().catch(e => console.error("Audio play error:", e));
+        } else {
+            console.warn("[Audio] No audioUrl found for this sentence.");
+        }
+        return;
+    }
+
+    // Classic SYNCRO Mode (TTS fallback)
     window.speechSynthesis.cancel();
 
-    const currentPhrase = isFullRunChallenge ? SENTENCES.map(s => s.text).join('. ') : SENTENCES[currentSentenceIndex].text;
-    const utterance = new SpeechSynthesisUtterance(currentPhrase);
+    let textToSpeak = "";
+    if (isFullRunChallenge) {
+        textToSpeak = SENTENCES.map(s => s.text).join('. ');
+    } else {
+        if (SENTENCES[currentSentenceIndex]) {
+            textToSpeak = SENTENCES[currentSentenceIndex].text;
+        }
+    }
+    console.log(`[TTS] text: ${textToSpeak}`);
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
     
-    // 2. JIT Voice Check
+    // JIT Voice Check
     if (!selectedVoice) {
         const voices = window.speechSynthesis.getVoices();
-        selectedVoice = voices.find(v => v.name.includes('Google US English')) ||
-                        voices.find(v => v.name.includes('Samantha')) || 
-                        voices.find(v => v.lang === 'en-US') ||
-                        voices.find(v => v.lang.startsWith('en'));
-        
-        if (selectedVoice) {
-            modelVoiceLabel.innerText = `TTS: ${selectedVoice.name}`;
-            modelVoiceLabel.style.color = "#00E676";
-        }
+        selectedVoice = voices.find(v => v.name.includes('Samantha')) || 
+                        voices.find(v => v.name.includes('Google US English')) ||
+                        voices.find(v => v.lang === 'en-US');
     }
 
     if (selectedVoice) {
         utterance.voice = selectedVoice;
-        utterance.lang = selectedVoice.lang;
-        console.log(`[Playback] Using voice: "${selectedVoice.name}"`);
+        console.log(`[TTS] using voice: ${selectedVoice.name}`);
     } else {
-        console.warn("[Playback] No specific English voice found. Using default.");
-        utterance.lang = 'en-US';
+        console.log("[TTS] using default voice");
     }
-
-    utterance.rate = 0.9; 
-    utterance.pitch = 1;
-    
-    utterance.onstart = () => console.log("[Playback] Started");
-    utterance.onend = () => console.log("[Playback] Finished");
     
     window.speechSynthesis.speak(utterance);
+}
+
+function startCountdown(onComplete) {
+    if (!countdownOverlay) return onComplete();
+    
+    countdownOverlay.classList.remove('hidden');
+    let count = 3;
+    
+    const tick = () => {
+        if (count > 0) {
+            countdownOverlay.innerHTML = `<div class="countdown-number">${count}</div>`;
+            count--;
+            setTimeout(tick, 1000);
+        } else {
+            countdownOverlay.classList.add('hidden');
+            onComplete();
+        }
+    };
+    tick();
 }
 
 async function startRecordingProcess() {
@@ -361,6 +420,7 @@ async function startRecordingProcess() {
         statusText.innerText = "Recording...";
         statusText.style.color = "#FF1744"; // Red
         audioChunks = [];
+        recognizedText = ""; // Reset text
 
         // UI Updates
         btnRecord.classList.add('hidden');
@@ -375,21 +435,53 @@ async function startRecordingProcess() {
         
         mediaRecorder.onstop = async () => {
             console.log("[Recording] MediaRecorder stopped");
-            
-            // Create blob and url for playback
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            if (userAudioUrl) {
-                URL.revokeObjectURL(userAudioUrl); // Cleanup previous
-            }
-            userAudioUrl = URL.createObjectURL(audioBlob);
+            try {
+                // Create blob and url for playback
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                if (userAudioUrl) {
+                    URL.revokeObjectURL(userAudioUrl); // Cleanup previous
+                }
+                userAudioUrl = URL.createObjectURL(audioBlob);
 
-            // In a real app, we would process the audio blob here.
-            // For this prototype, we proceed to scoring.
-            calculateAndShowScores();
+                // In a real app, we would process the audio blob here.
+                // For this prototype, we proceed to scoring.
+                calculateAndShowScores();
+            } catch (e) {
+                console.error("[Processing] Error in onstop:", e);
+                statusText.innerText = "Error";
+                statusText.style.color = "#FF1744";
+                // Recover UI
+                btnRecord.classList.remove('hidden');
+                btnStop.classList.add('hidden');
+            }
         };
 
         mediaRecorder.start();
         console.log("[Recording] Started");
+
+        // --- Start Speech Recognition ---
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.lang = 'en-US';
+            speechRecognition.continuous = false;
+            speechRecognition.interimResults = false;
+
+            speechRecognition.onresult = (event) => {
+                if (event.results.length > 0) {
+                    recognizedText = event.results[0][0].transcript;
+                    console.log("[Recognition] Result:", recognizedText);
+                }
+            };
+
+            speechRecognition.onerror = (event) => {
+                console.error("[Recognition] Error:", event.error);
+                // Prevent freezing on network error - keep going with empty text
+                // statusText will be updated when onstop fires
+            };
+
+            speechRecognition.start();
+        }
 
     } catch (err) {
         console.error("Mic Error:", err);
@@ -417,6 +509,11 @@ function stopRecordingProcess() {
     // Stop all audio tracks to release mic
     if (mediaRecorder && mediaRecorder.stream) {
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+    
+    // Stop Recognition
+    if (speechRecognition) {
+        speechRecognition.stop();
     }
 
     // UI Updates
@@ -470,21 +567,48 @@ function calculateAndShowScores() {
         });
     }
 
+    // --- Diff Preview ---
+    const userText = recognizedText || ""; 
+
+    // --- Battle Mode Branch ---
+    if (isBattleMode) {
+        // 1. Calc Score from Diff (Correct Words / Total)
+        const diffData = calculateDiff(currentSentence.text, userText);
+        const correctCount = diffData.filter(d => d.status === 'correct').length;
+        const totalWords = diffData.length;
+        // Simple percentage score mapped to 20
+        totalScore = Math.round((correctCount / totalWords) * 20);
+        
+        // 2. Hide Old Visuals
+        radarWrapper.classList.add('hidden');
+        scoreCardsContainer.innerHTML = ''; // Hide old cards
+        fullRunPlaybackControls.classList.add('hidden');
+        
+        // 3. Show Diff
+        renderDiffPreview(currentSentence.text, userText);
+        
+        // 4. Update Result Container Class
+        scoreTotalValue.parentElement.classList.remove('full-run-total');
+        
+    } else {
+        // --- Old SYNCRO Branch ---
     if (isFullRunChallenge) {
-    radarWrapper.classList.add('hidden');
-    fullRunPlaybackControls.classList.remove('hidden');
-    renderFullRunResults(currentResults);
-    scoreTotalValue.parentElement.classList.add('full-run-total');
-} else {
-    radarWrapper.classList.remove('hidden');
-    fullRunPlaybackControls.classList.add('hidden');
-    const scoresForChart = Object.fromEntries(
-        Object.entries(currentResults).map(([k, v]) => [k, v.score])
-    );
-    drawRadarChart(scoresForChart);
-    renderScoreCards(currentResults);
-    scoreTotalValue.parentElement.classList.remove('full-run-total');
-}
+        radarWrapper.classList.add('hidden');
+        fullRunPlaybackControls.classList.remove('hidden');
+        renderFullRunResults(currentResults);
+        scoreTotalValue.parentElement.classList.add('full-run-total');
+    } else {
+        radarWrapper.classList.remove('hidden');
+        renderDiffPreview(currentSentence.text, userText);
+        fullRunPlaybackControls.classList.add('hidden');
+        const scoresForChart = Object.fromEntries(
+            Object.entries(currentResults).map(([k, v]) => [k, v.score])
+        );
+        drawRadarChart(scoresForChart);
+        renderScoreCards(currentResults);
+        scoreTotalValue.parentElement.classList.remove('full-run-total');
+    }
+    }
     
     // --- Pass/Fail Logic ---
     const passed = totalScore >= 75;
@@ -500,12 +624,20 @@ function calculateAndShowScores() {
              passFailMessage.classList.add('stage-clear-message');
     }
     else if (passed) {
-        const tier = getTierInfo(totalScore);
-        passFailMessage.textContent = tier.celebrationText;
-        tierBadge.textContent = tier.name;
-        tierBadge.className = `tier-badge ${tier.badgeClass}`;
-        tierBadge.style.background = tier.background;
-        tierBadge.style.color = tier.color;
+        if (isBattleMode) {
+            // Battle Mode Success
+            passFailMessage.textContent = "Round Clear!";
+            tierBadge.textContent = `SCORE: ${totalScore}/20`;
+            tierBadge.style.background = '#00E676';
+            tierBadge.style.color = '#000';
+        } else {
+            const tier = getTierInfo(totalScore);
+            passFailMessage.textContent = tier.celebrationText;
+            tierBadge.textContent = tier.name;
+            tierBadge.className = `tier-badge ${tier.badgeClass}`;
+            tierBadge.style.background = tier.background;
+            tierBadge.style.color = tier.color;
+        }
         passFailMessage.classList.add('pass-message');
         
         if (!isFullRunChallenge) {
@@ -516,7 +648,12 @@ function calculateAndShowScores() {
         btnNext.classList.remove('hidden');
 
     } else { // Not passed
-        const pointsNeeded = 75 - totalScore;
+        let pointsNeeded = 0;
+        if (isBattleMode) {
+             pointsNeeded = 15 - totalScore; // 75% of 20 is 15
+        } else {
+             pointsNeeded = 75 - totalScore;
+        }
         passFailMessage.textContent = `あと ${pointsNeeded} 点でクリア`;
         passFailMessage.classList.add('fail-message');
         btnRetry.classList.remove('hidden');
@@ -591,16 +728,26 @@ function calculateAndShowScores() {
 function showResultScreen(totalScore) {
     practiceScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
+    // Diff preview is already rendered by renderDiffPreview in calculateAndShowScores
 
     if (isFullRunChallenge) {
         radarSVG.style.display = 'none';
+        fullRunPlaybackControls.classList.remove('hidden');
         renderFullRunResults(currentResults);
         scoreTotalValue.parentElement.classList.add('full-run-total');
+    } else if (isBattleMode) {
+        // Battle Mode: diff preview is the main result
+        radarSVG.style.display = 'none';
+        fullRunPlaybackControls.classList.add('hidden');
     } else {
         radarSVG.style.display = 'block';
-        const scoresForChart = Object.fromEntries(Object.entries(currentResults).map(([k, v]) => [k, v.score]));
+        fullRunPlaybackControls.classList.add('hidden');
+        const scoresForChart = Object.fromEntries(
+            Object.entries(currentResults).map(([k, v]) => [k, v.score])
+        );
         drawRadarChart(scoresForChart);
         renderScoreCards(currentResults);
+        scoreTotalValue.parentElement.classList.remove('full-run-total');
     }
 }
 
@@ -989,27 +1136,40 @@ function resetUI() {
         fullRunList.classList.add('hidden');
     }
     
+    clearDiffPreview();
     // Reset buttons
     btnRecord.classList.remove('hidden');
     btnStop.classList.add('hidden');
     btnStop.disabled = true;
+    
+    // Blind Text for Battle Mode
+    if (isBattleMode) {
+        targetSentenceHeader.classList.add('blind-text');
+    } else {
+        targetSentenceHeader.classList.remove('blind-text');
+    }
 }
 
 function initVoiceSelection() {
     const loadVoices = () => {
         const voices = window.speechSynthesis.getVoices();
-        
-        selectedVoice = voices.find(v => v.name.includes('Google US English')) ||
-                        voices.find(v => v.name.includes('Samantha')) || 
-                        voices.find(v => v.lang === 'en-US') ||
-                        voices.find(v => v.lang.startsWith('en'));
+        if (voices.length === 0) return;
+
+        selectedVoice = voices.find(v => v.name.includes('Samantha')) || 
+                        voices.find(v => v.name.includes('Google US English')) ||
+                        voices.find(v => v.lang === 'en-US');
 
         if (selectedVoice) {
-            modelVoiceLabel.innerText = `TTS: ${selectedVoice.name}`;
-            modelVoiceLabel.style.color = "#00E676";
+            console.log(`[TTS] Init selected: ${selectedVoice.name}`);
+            if (modelVoiceLabel) {
+                modelVoiceLabel.innerText = `TTS: ${selectedVoice.name}`;
+                modelVoiceLabel.style.color = "#00E676";
+            }
         } else {
-            modelVoiceLabel.innerText = "TTS: Default (Check System)";
-            modelVoiceLabel.style.color = "#FF1744";
+            if (modelVoiceLabel) {
+                modelVoiceLabel.innerText = "TTS: Default";
+                modelVoiceLabel.style.color = "#FF1744";
+            }
         }
     };
 
@@ -1097,3 +1257,135 @@ function getTierInfo(score) {
 function getRandomItem(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
+// --- Diff Engine (MVP) ---
+
+function renderDiffPreview(correctText, userText) {
+    if (!diffPreviewContainer || !diffDisplay) return;
+    
+    diffPreviewContainer.classList.remove('hidden');
+    if (recognizedTextDisplay) {
+        recognizedTextDisplay.textContent = userText ? `Recognized: "${userText}"` : "Recognized: (No speech detected)";
+    }
+
+    const diffData = calculateDiff(correctText, userText);
+    diffDisplay.innerHTML = '';
+
+    diffData.forEach(token => {
+        const span = document.createElement('span');
+        span.className = `diff-token diff-${token.status}`;
+        
+        if (token.status === 'missing') {
+            span.innerHTML = '&nbsp;'; 
+        } else {
+            span.textContent = token.word;
+        }
+        diffDisplay.appendChild(span);
+    });
+}
+
+function clearDiffPreview() {
+    if (diffPreviewContainer) {
+        diffPreviewContainer.classList.add('hidden');
+    }
+    if (diffDisplay) {
+        diffDisplay.innerHTML = '';
+    }
+    if (recognizedTextDisplay) {
+        recognizedTextDisplay.textContent = '';
+    }
+}
+
+function normalizeToken(word) {
+    if (!word) return "";
+    // Remove punctuation and lowercase
+    return word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase();
+}
+
+function tokenize(text) {
+    return text.trim().split(/\s+/);
+}
+
+function calculateDiff(correctText, userText) {
+    if (!correctText) return [];
+    const correctTokens = tokenize(correctText);
+    
+    // Fix: Handle empty/no speech
+    // If input is empty, blank, or "(No speech detected)", mark all missing.
+    if (!userText || userText.trim() === "" || userText === "(No speech detected)") {
+        return correctTokens.map(word => ({ word, status: 'missing', input: null }));
+    }
+    
+    const userTokens = tokenize(userText);
+    
+    let userIdx = 0;
+    const result = [];
+
+    for (let i = 0; i < correctTokens.length; i++) {
+        const cWord = correctTokens[i];
+        const cToken = normalizeToken(cWord);
+        
+        // Get current user token (if available)
+        const uOriginal = userTokens[userIdx];
+        const uToken = normalizeToken(uOriginal);
+
+        // 1. Direct Match
+        if (cToken === uToken) {
+            result.push({ word: cWord, status: 'correct', input: uOriginal });
+            userIdx++;
+        } 
+        // 2. Mismatch handling
+        else {
+            // Lookahead: Does the current user token match the NEXT correct token?
+            // If yes, it implies the current correct token is missing in user input.
+            let matchFoundLater = false;
+            
+            // Simple lookahead (check next word)
+            // If the user's current word matches the NEXT correct word, 
+            // we assume the user skipped the CURRENT correct word.
+            if (i + 1 < correctTokens.length) {
+                 const nextCToken = normalizeToken(correctTokens[i+1]);
+                 if (uToken && uToken === nextCToken) {
+                     matchFoundLater = true;
+                 }
+            }
+
+            if (matchFoundLater) {
+                // The user skipped this word to get to the next one
+                result.push({ word: cWord, status: 'missing', input: null });
+                // We do NOT increment userIdx, because uToken is still waiting to match the next cToken
+            } else {
+                // User said something else, or we are at end
+                result.push({ word: cWord, status: 'wrong', input: uOriginal || null });
+                userIdx++; // Consume the wrong word
+            }
+        }
+    }
+
+    return result;
+}
+
+// Expose for testing
+window.testDiffEngine = function() {
+    const examples = [
+        { c: "I made a decision", u: "I made decision" },
+        { c: "He is happy", u: "He is sad" },
+        { c: "Good morning", u: "Good ah morning" } // 'ah' will be treated as 'wrong' for 'morning', and 'morning' will be 'missing' with this simple logic? 
+        // Actually: 'Good'='Good'. 'ah'!='morning'. 'ah'!=next? (None). So 'morning' becomes 'wrong' (input 'ah').
+        // Then 'morning' (user) is leftover.
+        // Wait, "Good ah morning". 
+        // 1. Good==Good. uIdx=1(ah).
+        // 2. c=morning. u=ah. match? No.
+        //    lookahead: next correct is null.
+        //    so 'morning' is WRONG (input 'ah').
+        //    uIdx=2(morning).
+        // End of correct loop.
+        // This is acceptable for MVP (strict slot filling).
+    ];
+
+    examples.forEach(ex => {
+        console.log(`\nDiffing: "${ex.c}" vs "${ex.u}"`);
+        console.table(calculateDiff(ex.c, ex.u));
+    });
+};
+
+// --- Initialization ---

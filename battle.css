@@ -1,0 +1,222 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --primary: #00E676; /* Bright Green */
+    --secondary: #2979FF; /* Bright Blue */
+    --danger: #FF1744;
+    --text-main: #ffffff;
+    --text-muted: #b0b0b0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+}
+
+.mock-title {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--danger);
+    color: white;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Header */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+h2 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
+
+.badge-display {
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.stage-info {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 30px;
+}
+
+/* Screens */
+.screen-container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.hidden { display: none !important; }
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Battle Screen */
+.target-area {
+    margin-bottom: 40px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.instruction {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.blind-text {
+    font-size: 2rem;
+    color: transparent;
+    text-shadow: 0 0 18px rgba(255, 255, 255, 0.6);
+    user-select: none;
+    transition: text-shadow 0.3s;
+    margin: 0;
+}
+
+.control-area {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Buttons */
+.btn {
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.1s, opacity 0.2s;
+    width: 100%;
+}
+
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: #000; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-secondary { background: transparent; border: 1px solid var(--text-muted); color: var(--text-main); }
+
+/* Recording UI */
+#recordingArea {
+    margin: 20px 0;
+    animation: pulse-red 1.5s infinite;
+}
+
+.mic-icon { font-size: 3rem; margin-bottom: 10px; }
+
+@keyframes pulse-red {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Result Screen */
+.result-header { margin-bottom: 30px; }
+#resultTitle { font-size: 2rem; margin: 0 0 10px 0; }
+
+.score-badge {
+    display: inline-block;
+    background: #333;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border: 1px solid var(--primary);
+}
+
+.diff-box {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.diff-label {
+    margin: 0 0 10px 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.diff-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 1.4rem;
+    line-height: 1.6;
+}
+
+.diff-token { padding: 2px 4px; border-radius: 4px; }
+.diff-correct { color: var(--primary); }
+.diff-wrong { color: var(--danger); text-decoration: line-through; }
+.diff-missing {
+    display: inline-block;
+    width: 40px;
+    border-bottom: 2px solid #555;
+    margin: 0 4px;
+    height: 1.2em;
+    vertical-align: middle;
+}
+
+.feedback-text { color: var(--text-muted); margin-bottom: 30px; }
+
+.action-area {
+    display: flex;
+    gap: 10px;
+}
+
+/* Countdown Overlay */
+.overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.countdown-num {
+    font-size: 8rem;
+    font-weight: 900;
+    color: var(--primary);
+    animation: popIn 0.95s infinite;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retention Battle Prototype</title>
+    <link rel="stylesheet" href="battle.css">
+</head>
+<body>
+    <div class="app-container">
+        <h1 class="mock-title">BATTLE MOCK</h1>
+        <!-- Header -->
+        <header>
+            <div class="header-top">
+                <h2>RETENTION BATTLE</h2>
+                <div class="badge-display">🥇 0 🥈 0 💎 0</div>
+            </div>
+            <div class="stage-info">Stage 1 - Round 1/5</div>
+        </header>
+
+        <main>
+            <!-- Battle Screen -->
+            <section id="battleScreen" class="screen-container">
+                <!-- Target Area -->
+                <div class="target-area">
+                    <p class="instruction">Listen & Retain</p>
+                    <!-- Text is blurred/hidden initially -->
+                    <h2 id="targetText" class="blind-text">I made a decision.</h2>
+                </div>
+
+                <!-- Controls -->
+                <div class="control-area">
+                    <div id="recordingArea" class="hidden">
+                        <div class="mic-icon">🎤</div>
+                        <p id="statusText">Recording...</p>
+                    </div>
+
+                    <button id="btnRecord" class="btn btn-primary btn-large">Start Battle</button>
+                    <button id="btnStop" class="btn btn-danger btn-large hidden">Stop</button>
+                </div>
+            </section>
+
+            <!-- Result Screen -->
+            <section id="resultScreen" class="screen-container hidden">
+                <div class="result-header">
+                    <h2 id="resultTitle">Round Clear!</h2>
+                    <div id="scoreBadge" class="score-badge">SCORE: 18/20</div>
+                </div>
+
+                <!-- Diff Display -->
+                <div class="diff-box">
+                    <p class="diff-label">Your Retention:</p>
+                    <div id="diffContainer" class="diff-container">
+                        <!-- Spans injected here -->
+                    </div>
+                </div>
+
+                <!-- Feedback -->
+                <p id="feedbackText" class="feedback-text">Excellent retention!</p>
+
+                <!-- Actions -->
+                <div class="action-area">
+                    <button id="btnRetry" class="btn btn-secondary">Retry</button>
+                    <button id="btnNext" class="btn btn-primary">Next Round</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Overlays -->
+        <div id="countdownOverlay" class="overlay hidden">
+            <div id="countdownNum" class="countdown-num">3</div>
+        </div>
+    </div>
+
+    <script src="battle.js"></script>
+</body>
+</html>

@@ -37,6 +37,12 @@
                     <p id="tier-badge"></p>
                 </div>
 
+                <!-- Diff Preview Area -->
+                <div id="diffPreviewContainer" class="hidden">
+                    <p id="recognizedTextDisplay" class="recognized-text"></p>
+                    <div id="diffDisplay" class="diff-container"></div>
+                </div>
+
                 <div id="radarWrapper" class="radar-wrapper">
                     <svg id="radarSVG" viewBox="0 0 300 300"></svg>
                     <div class="total-score-overlay">
@@ -92,13 +98,8 @@
                 </div>
             </div>
 
-            <!-- Level Clear Overlay -->
-            <div id="levelClearOverlay" class="modal hidden">
-                <div class="modal-content">
-                    <h2 id="levelClearTitle" style="color: var(--primary); margin-bottom: 20px; line-height: 1.4;"></h2>
-                    <button id="btnLevelClearNext" class="btn btn-primary">通し読みへ</button>
-                </div>
-            </div>
+            <!-- Countdown Overlay -->
+            <div id="countdownOverlay" class="hidden"></div>
 
             <!-- Celebration Overlay -->
             <div id="celebrationOverlay" class="celebration-overlay hidden">
