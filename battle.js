@@ -4,31 +4,48 @@ const BATTLE_ROUNDS = [
     {
         text: "I made a decision.",
         outcomes: [
-            "I made a decision",      // 0: Perfect
-            "I made decision",        // 1: Missing 'a'
-            "I made the decision"     // 2: Wrong 'the'
+            "I made a decision",
+            "I made decision",
+            "I made the decision"
         ]
     },
     {
-        text: "Excuse me.",
-        outcomes: [
-            "Excuse me",              // 0: Perfect
-            "Excuse",                 // 1: Missing 'me'
-            "Excuse you"              // 2: Wrong word
-        ]
-    },
+    text: "Would you do me a favor?",
+    outcomes: [
+        "Would you do me a favor",
+        "Would you do me favor",
+        "Would you do me a favor please"
+    ]
+},
     {
         text: "It's my first time here.",
         outcomes: [
-            "It's my first time here", // 0: Perfect
-            "It's my time here",       // 1: Missing word
-            "It is my first time here" // 2: Expansion
+            "It's my first time here",
+            "It's my time here",
+            "It is my first time here"
+        ]
+    },
+    {
+        text: "How can I get to the station?",
+        outcomes: [
+            "How can I get to the station",
+            "How can I get station",
+            "How do I get to the station"
+        ]
+    },
+    {
+        text: "Could you say that again?",
+        outcomes: [
+            "Could you say that again",
+            "Could you say that",
+            "Can you say that again"
         ]
     }
 ];
 
 // --- DOM Elements ---
 const battleScreen = document.getElementById('battleScreen');
+const youSaidText = document.getElementById('youSaidText');
 const resultScreen = document.getElementById('resultScreen');
 const btnRecord = document.getElementById('btnRecord');
 const btnStop = document.getElementById('btnStop');
@@ -43,10 +60,18 @@ const resultTitle = document.getElementById('resultTitle');
 const feedbackText = document.getElementById('feedbackText');
 const btnRetry = document.getElementById('btnRetry');
 const btnNext = document.getElementById('btnNext');
+const successOverlay = document.getElementById('successOverlay');
+const successText = document.getElementById('successText');
+const stageClearOverlay = document.getElementById('stageClearOverlay');
+const confettiContainer = document.getElementById('confettiContainer');
+let audioCtx;
 
 // --- State ---
 let currentRoundIndex = 0;
 let currentOutcomeIndex = 0; // Cycles 0 -> 1 -> 2 on retry
+let clearedCount = 0;
+let missedQuestions = new Set();
+let isStageComplete = false;
 let isBusy = false; // Prevents multiple clicks
 let isRecording = false; // Tracks recording state
 let mediaRecorder;
@@ -67,18 +92,33 @@ function initRound() {
     isBusy = false;
     const roundData = BATTLE_ROUNDS[currentRoundIndex];
     targetText.innerText = roundData.text;
-    
+    youSaidText.innerText = "";
+    isRecording = false;
+btnRecord.classList.remove('hidden');
+btnRecord.disabled = false;
+btnRecord.innerText = "Start Battle";
+btnStop.classList.add('hidden');
     // Reset Views
     battleScreen.classList.remove('hidden');
     resultScreen.classList.add('hidden');
     
     // Reset Controls
     btnRecord.classList.remove('hidden');
+btnRecord.disabled = false;
+btnRecord.innerText = "Start Battle";
+btnRecord.classList.remove('recording-mode');
+    btnRecord.classList.remove('hidden');
     btnRecord.disabled = false;
     btnRecord.disabled = false;
     recordingArea.classList.add('hidden');
     recordingArea.classList.remove('pulsing');
     statusText.innerText = "Ready";
+    btnNext.innerText = "Next Round";
+btnRetry.classList.remove('hidden');
+isStageComplete = false;
+scoreBadge.style.display = '';
+youSaidText.style.display = '';
+diffContainer.parentElement.style.display = '';
 
     // Clean up previous audio object URL to prevent memory leaks
     if (userAudioUrl) {
@@ -110,21 +150,28 @@ async function transcribeRecordedAudio(audioBlob) {
 // --- Event Listeners ---
 
 btnRecord.onclick = () => {
+    if (isRecording) {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            btnRecord.disabled = true;
+            statusText.innerText = "Transcribing...";
+            mediaRecorder.stop();
+        }
+        return;
+    }
+
     if (isBusy) return;
     isBusy = true;
 
     btnRecord.disabled = true;
     statusText.innerText = "Listening...";
     recordingArea.classList.remove('hidden');
-    
+
     playRealAudio(
-        () => { // onSuccess
-            // Immediately start recording after audio finishes
+        () => {
             startRecording();
         },
-        (error) => { // onError
+        (error) => {
             alert(`Audio playback failed: ${error}. Please try again.`);
-            // Reset the round to a clean state
             initRound();
         }
     );
@@ -137,21 +184,61 @@ btnStop.onclick = () => {
 btnRetry.onclick = () => {
     battleScreen.classList.remove('hidden');
     resultScreen.classList.add('hidden');
-    btnRecord.classList.remove('hidden');
-    btnRecord.disabled = false;
-    recordingArea.classList.add('hidden');
-    recordingArea.classList.remove('pulsing');
-    statusText.innerText = "Ready";
+    initRound();
 };
+function autoStartCurrentRound() {
+    isBusy = true;
+    btnRecord.disabled = true;
+    statusText.innerText = "Listening...";
+    recordingArea.classList.remove('hidden');
+
+    playRealAudio(
+        () => {
+            startRecording();
+        },
+        (error) => {
+            alert(`Audio playback failed: ${error}. Please try again.`);
+            initRound();
+        }
+    );
+}
+
+function showRoundCueAndStart() {
+    countdownOverlay.classList.remove('hidden');
+    countdownNum.textContent = `Round ${currentRoundIndex + 1}`;
+    statusText.innerText = `${currentRoundIndex + 1}/${BATTLE_ROUNDS.length}`;
+
+    setTimeout(() => {
+        countdownOverlay.classList.add('hidden');
+        countdownNum.textContent = "";
+        statusText.innerText = "Listening...";
+        autoStartCurrentRound();
+    }, 900);
+}
 
 btnNext.onclick = () => {
     if (currentRoundIndex < BATTLE_ROUNDS.length - 1) {
         currentRoundIndex++;
         initRound();
+        showRoundCueAndStart();
     } else {
-        alert("All rounds completed! Restarting.");
-        currentRoundIndex = 0;
-        initRound();
+        battleScreen.classList.add('hidden');
+        resultScreen.classList.remove('hidden');
+
+        diffContainer.innerHTML = '';
+        scoreBadge.style.display = 'none';
+        youSaidText.style.display = 'none';
+        diffContainer.parentElement.style.display = 'none';
+
+        resultTitle.innerText = "Stage Complete!";
+        resultTitle.style.color = "var(--primary)";
+        feedbackText.innerText = "5問おつかれさま！ New Stageで最初からもう一度できます。";
+
+        btnRetry.classList.add('hidden');
+        btnNext.classList.remove('hidden');
+        btnNext.innerText = "New Stage";
+
+        currentRoundIndex = -1;
     }
 };
 
@@ -278,54 +365,68 @@ async function playRealAudio(onComplete, onError) {
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
         isRecording = true;
         audioChunks = [];
         mediaRecorder = new MediaRecorder(stream);
 
+        // ここが大事：録音開始時に Start Battle を Stop に変える
+        btnRecord.classList.remove('hidden');
+        btnRecord.disabled = false;
+        btnRecord.innerText = "Stop";
+        btnRecord.classList.add('recording-mode');
+        btnStop.classList.add('hidden');
+
+        recordingArea.classList.remove('hidden');
+        recordingArea.classList.add('pulsing');
+        statusText.innerText = "Recording...";
+
         mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
+            if (event.data && event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
         };
 
         mediaRecorder.onstop = async () => {
-    // Stop all media tracks to release the microphone
-    stream.getTracks().forEach(track => track.stop());
+            // Stop all media tracks to release the microphone
+            stream.getTracks().forEach(track => track.stop());
 
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
-    if (userAudioUrl) {
-        URL.revokeObjectURL(userAudioUrl);
-    }
-    userAudioUrl = URL.createObjectURL(audioBlob);
+            if (userAudioUrl) {
+                URL.revokeObjectURL(userAudioUrl);
+            }
+            userAudioUrl = URL.createObjectURL(audioBlob);
 
-    statusText.innerText = "Transcribing...";
+            // ここも大事：録音終了後に状態を戻す
+            isRecording = false;
+btnRecord.disabled = true;
+btnStop.classList.add('hidden');
 
-    try {
-        const userText = await transcribeRecordedAudio(audioBlob);
+            statusText.innerText = "Transcribing...";
 
-        console.log("[TRANSCRIPT]", userText);
+            try {
+                const userText = await transcribeRecordedAudio(audioBlob);
+                console.log("[TRANSCRIPT]", userText);
+                finishRound(userText);
+            } catch (error) {
+                console.error("[TRANSCRIBE ERROR]", error);
+                alert(`Transcription failed: ${error.message}`);
+                isBusy = false;
+                statusText.innerText = "Ready";
+            }
+        };
 
-        finishRound(userText);
-    } catch (error) {
-        console.error("[TRANSCRIBE ERROR]", error);
-        alert(`Transcription failed: ${error.message}`);
-        isBusy = false;
-        statusText.innerText = "Ready";
-    }
-};
-
-        btnRecord.classList.add('hidden');
-        recordingArea.classList.add('pulsing');
-        btnStop.classList.remove('hidden');
-        btnStop.disabled = false;
-        statusText.innerText = "Recording...";
-        console.log("[Mic] Recording started...");
         mediaRecorder.start();
-
-    } catch (err) {
-        console.error("Microphone access denied:", err);
-        alert("Microphone access is required. Please allow permission and try again.");
-        initRound(); // Reset the round on error
+    } catch (error) {
+        console.error("[MIC ERROR]", error);
+        alert("Microphone access failed. Please allow microphone access and try again.");
+        isRecording = false;
+        isBusy = false;
+        btnRecord.innerText = "Start Battle";
+        btnRecord.disabled = false;
+        btnStop.classList.add('hidden');
+        statusText.innerText = "Ready";
     }
 }
 
@@ -352,20 +453,173 @@ function finishRound(userText) {
 
     renderDiff(diff);
 
+    const spokenText = (userText || "").trim();
+
+if (spokenText) {
+    youSaidText.innerText = `You said: ${spokenText}`;
+} else {
+    youSaidText.innerText = "You said: (could not catch your answer)";
+}
+
     scoreBadge.innerText = `SCORE: ${retentionScore}/20`;
 
     if (passed) {
-        resultTitle.innerText = "Round Clear!";
-        resultTitle.style.color = "var(--primary)";
-        feedbackText.innerText = "Excellent retention! Ready for the next challenge.";
-        btnNext.classList.remove('hidden');
+        // Always play "Perfect!" first for consistency
+        playSuccessSound();
+        showSuccessAnimation("Perfect!", () => {
+            renderResultScreenContent();
+
+            if (currentRoundIndex >= BATTLE_ROUNDS.length - 1) {
+                // Final Round: Auto-transition
+                feedbackText.innerText = "正解！ステージクリア！";
+                btnNext.classList.add('hidden');
+                setTimeout(transitionToStageComplete, 1500);
+            } else {
+                // Normal Round
+                btnNext.innerText = "次の問題へ";
+                feedbackText.innerText = "正解！次の問題へ。";
+                btnNext.classList.remove('hidden');
+            }
+        });
     } else {
         resultTitle.innerText = "Try Again...";
         resultTitle.style.color = "var(--danger)";
-        feedbackText.innerText = "A few gaps remain. Focus on the blanks and try again!";
+        feedbackText.innerText = "出来なかったところに集中してもう一度！";
         btnNext.classList.add('hidden');
     }
     isBusy = false;
+}
+
+function renderResultScreenContent() {
+    resultTitle.innerText = "Round Clear!";
+    resultTitle.style.color = "var(--primary)";
+}
+
+function transitionToStageComplete() {
+    playStageClearSound();
+    showStageClearAnimation();
+    setupStageCompleteScreen();
+}
+
+function setupStageCompleteScreen() {
+    diffContainer.innerHTML = '';
+    scoreBadge.style.display = 'none';
+    youSaidText.style.display = 'none';
+    
+    if (diffContainer && diffContainer.parentElement) {
+        diffContainer.parentElement.style.display = 'none';
+    }
+
+    resultTitle.innerText = "Stage Complete!";
+    resultTitle.style.color = "var(--primary)";
+    feedbackText.innerText = "5問おつかれさま！ New Stageで最初からもう一度できます。";
+
+    btnRetry.classList.add('hidden');
+    btnNext.classList.remove('hidden');
+    btnNext.innerText = "New Stage";
+
+    currentRoundIndex = -1;
+}
+
+function showSuccessAnimation(text, onComplete) {
+    if (!successOverlay || !successText) {
+        if (onComplete) onComplete();
+        return;
+    }
+    
+    successText.innerText = text;
+    successOverlay.classList.remove('hidden');
+    
+    setTimeout(() => {
+        successOverlay.classList.add('hidden');
+        if (onComplete) onComplete();
+    }, 1000);
+}
+
+function showStageClearAnimation(onComplete) {
+    if (!stageClearOverlay) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    stageClearOverlay.classList.remove('hidden');
+    createConfetti();
+
+    setTimeout(() => {
+        stageClearOverlay.classList.add('hidden');
+        if (onComplete) onComplete();
+    }, 2500); // Display for 2.5 seconds
+}
+
+function createConfetti() {
+    if (!confettiContainer) return;
+    confettiContainer.innerHTML = '';
+    const colors = ['#FFD700', '#FF4081', '#00E676', '#2979FF', '#FFFFFF'];
+
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+        confetti.style.animationDelay = Math.random() * 1 + 's';
+        
+        // Randomize size slightly
+        const size = Math.random() * 8 + 6;
+        confetti.style.width = size + 'px';
+        confetti.style.height = size + 'px';
+        
+        confettiContainer.appendChild(confetti);
+    }
+}
+
+function playSuccessSound() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const playNote = (freq, startTime, duration, type = 'sine') => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(startTime);
+        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.stop(startTime + duration);
+    };
+
+    const now = audioCtx.currentTime;
+    // Simple success: Do-So! (C5 - G5)
+    playNote(523.25, now, 0.2, 'sine'); // C5
+    playNote(783.99, now + 0.1, 0.4, 'sine'); // G5
+}
+
+function playStageClearSound() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const playNote = (freq, startTime, duration, type = 'triangle') => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(startTime);
+        gain.gain.setValueAtTime(0.2, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.stop(startTime + duration);
+    };
+
+    const now = audioCtx.currentTime;
+    // Fanfare: C E G C (high)
+    playNote(523.25, now, 0.2); // C5
+    playNote(659.25, now + 0.15, 0.2); // E5
+    playNote(783.99, now + 0.3, 0.2); // G5
+    playNote(1046.50, now + 0.45, 1.0); // C6
 }
 
 // --- Diff Engine & Rendering ---
