@@ -70,6 +70,8 @@ let audioCtx;
 let currentRoundIndex = 0;
 let currentOutcomeIndex = 0; // Cycles 0 -> 1 -> 2 on retry
 let clearedCount = 0;
+let stageResults = Array(BATTLE_ROUNDS.length).fill(null);
+let lastRecordingDurationMs = 0;
 let missedQuestions = new Set();
 let isStageComplete = false;
 let isBusy = false; // Prevents multiple clicks
@@ -98,6 +100,12 @@ btnRecord.classList.remove('hidden');
 btnRecord.disabled = false;
 btnRecord.innerText = "Start Battle";
 btnStop.classList.add('hidden');
+scoreBadge.classList.remove('stage-total-badge');
+feedbackText.classList.remove('stage-score-list');
+scoreBadge.style.display = '';
+if (currentRoundIndex === 0) {
+    stageResults = Array(BATTLE_ROUNDS.length).fill(null);
+}
     // Reset Views
     battleScreen.classList.remove('hidden');
     resultScreen.classList.add('hidden');
@@ -115,6 +123,7 @@ btnRecord.classList.remove('recording-mode');
     statusText.innerText = "Ready";
     btnNext.innerText = "Next Round";
 btnRetry.classList.remove('hidden');
+btnNext.style.marginTop = "";
 isStageComplete = false;
 scoreBadge.style.display = '';
 youSaidText.style.display = '';
@@ -365,6 +374,7 @@ async function playRealAudio(onComplete, onError) {
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recordingStartedAt = Date.now();
 
         isRecording = true;
         audioChunks = [];
@@ -388,6 +398,7 @@ async function startRecording() {
         };
 
         mediaRecorder.onstop = async () => {
+            lastRecordingDurationMs = Date.now() - recordingStartedAt;
             // Stop all media tracks to release the microphone
             stream.getTracks().forEach(track => track.stop());
 
@@ -439,6 +450,18 @@ function stopRecording() {
     mediaRecorder.stop(); // This will trigger the 'onstop' event handler
     isRecording = false;
 }
+function calculatePronunciationScore(correctText, userText) {
+    const wordCount = tokenize(correctText).length;
+    if (!wordCount) return 0;
+
+    const targetMs = wordCount * 550;
+    const actualMs = Math.max(lastRecordingDurationMs || 300, 300);
+
+    const ratio = Math.min(actualMs, targetMs) / Math.max(actualMs, targetMs);
+
+    const score = 8 + Math.round(ratio * 12);
+    return Math.max(0, Math.min(20, score));
+}
 
 function finishRound(userText) {
     battleScreen.classList.add('hidden');
@@ -447,9 +470,12 @@ function finishRound(userText) {
     const correctText = BATTLE_ROUNDS[currentRoundIndex].text;
     const diff = calculateDiff(correctText, userText);
     const retentionScore = calculateScore(diff);
+// Pass/fail is based on perfect retention only
+const passed = diff.every(token => token.status === 'correct');
 
-    // Pass/fail is based on perfect retention only
-    const passed = diff.every(token => token.status === 'correct');
+const pronunciationScore = passed
+    ? calculatePronunciationScore(correctText, userText)
+    : null;
 
     renderDiff(diff);
 
@@ -461,7 +487,15 @@ if (spokenText) {
     youSaidText.innerText = "You said: (could not catch your answer)";
 }
 
-    scoreBadge.innerText = `SCORE: ${retentionScore}/20`;
+    scoreBadge.innerText = passed
+    ? `Pronunciation Score: ${pronunciationScore}/20`
+    : `Pronunciation Score: -`;
+
+stageResults[currentRoundIndex] = {
+    text: correctText,
+    passed,
+    pronunciationScore
+};
 
     if (passed) {
         // Always play "Perfect!" first for consistency
@@ -503,21 +537,40 @@ function transitionToStageComplete() {
 
 function setupStageCompleteScreen() {
     diffContainer.innerHTML = '';
-    scoreBadge.style.display = 'none';
     youSaidText.style.display = 'none';
-    
+
     if (diffContainer && diffContainer.parentElement) {
         diffContainer.parentElement.style.display = 'none';
     }
 
+    const totalScore = stageResults.reduce((sum, item) => {
+        return sum + (item && item.pronunciationScore ? item.pronunciationScore : 0);
+    }, 0);
+
+    const lines = stageResults.map((item, index) => {
+        const text = item && item.text ? item.text : BATTLE_ROUNDS[index].text;
+        const scoreText = (item && item.pronunciationScore != null)
+            ? `${item.pronunciationScore}/20`
+            : '-';
+        return `${index + 1}. ${text} — ${scoreText}`;
+    });
+
     resultTitle.innerText = "Stage Complete!";
     resultTitle.style.color = "var(--primary)";
-    feedbackText.innerText = "5問おつかれさま！ New Stageで最初からもう一度できます。";
+
+    // 合計点を上に大きく出す
+    scoreBadge.style.display = '';
+    scoreBadge.classList.add('stage-total-badge');
+    scoreBadge.innerText = `Total Pronunciation Score: ${totalScore}/${BATTLE_ROUNDS.length * 20}`;
+
+    // 各問の一覧は下に左揃え
+    feedbackText.classList.add('stage-score-list');
+    feedbackText.innerHTML = lines.join('<br>');
 
     btnRetry.classList.add('hidden');
     btnNext.classList.remove('hidden');
     btnNext.innerText = "New Stage";
-
+btnNext.style.marginTop = "28px";
     currentRoundIndex = -1;
 }
 

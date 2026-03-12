@@ -30,19 +30,6 @@ body {
     position: relative;
 }
 
-.mock-title {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--danger);
-    color: white;
-    padding: 2px 8px;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    font-weight: bold;
-}
-
 /* Header */
 .header-top {
     display: flex;
@@ -340,4 +327,25 @@ h2 { margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
   background: #ff335f !important;
   border-color: #ff335f !important;
   color: #ffffff !important;
+}
+.stage-total-badge {
+  display: inline-flex !important;
+  justify-content: center;
+  align-items: center;
+  margin-top: 18px;
+  margin-bottom: 26px;
+  padding: 18px 28px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  min-width: 0;
+}
+
+.stage-score-list {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: left !important;
+  line-height: 1.65;
+  font-size: 1.05rem;
+  color: #d8d8d8;
+  white-space: normal;
 }
