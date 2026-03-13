@@ -1,46 +1,583 @@
 console.log("USING battle.js 2026-03-11 test");
 // --- Mock Data: Sentences & their specific transcripts ---
 const BATTLE_ROUNDS = [
-    {
-        text: "I made a decision.",
-        outcomes: [
-            "I made a decision",
-            "I made decision",
-            "I made the decision"
-        ]
-    },
-    {
-    text: "Would you do me a favor?",
-    outcomes: [
-        "Would you do me a favor",
-        "Would you do me favor",
-        "Would you do me a favor please"
-    ]
-},
-    {
-        text: "It's my first time here.",
-        outcomes: [
-            "It's my first time here",
-            "It's my time here",
-            "It is my first time here"
-        ]
-    },
-    {
-        text: "How can I get to the station?",
-        outcomes: [
-            "How can I get to the station",
-            "How can I get station",
-            "How do I get to the station"
-        ]
-    },
-    {
-        text: "Could you say that again?",
-        outcomes: [
-            "Could you say that again",
-            "Could you say that",
-            "Can you say that again"
-        ]
-    }
+  {
+    "id": "rb_0001",
+    "text": "I honestly don't know what to say.",
+    "meaningJa": "正直、なんて言ったらいいかわかりません。",
+    "chunks": [
+      { "text": "I honestly don't know", "roleJa": "正直わかりません" },
+      { "text": "what to say", "roleJa": "何と言うべきか" }
+    ],
+    "functionTag": "expression_of_state",
+    "patternTag": "S + V + O (Wh-clause)",
+    "wordCount": 7,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 31,
+    "level": 3
+  },
+  {
+    "id": "rb_0002",
+    "text": "It turned out to be better than I expected.",
+    "meaningJa": "思っていたより良い結果になりました。",
+    "chunks": [
+      { "text": "It turned out to be", "roleJa": "結果的に〜だった" },
+      { "text": "better than I expected", "roleJa": "予想していたより良く" }
+    ],
+    "functionTag": "explanation",
+    "patternTag": "It + turned out + C",
+    "wordCount": 9,
+    "speechRateWpm": 140,
+    "chunkCount": 2,
+    "linkingCount": 3,
+    "reductionCount": 1,
+    "weakFormCount": 3,
+    "difficultyScore": 36,
+    "level": 4
+  },
+  {
+    "id": "rb_0003",
+    "text": "I should have told you about this earlier.",
+    "meaningJa": "もっと早くこのことをあなたに言うべきでした。",
+    "chunks": [
+      { "text": "I should have told you", "roleJa": "あなたに言うべきだった" },
+      { "text": "about this earlier", "roleJa": "このことについてもっと早く" }
+    ],
+    "functionTag": "regret",
+    "patternTag": "S + should have + p.p.",
+    "wordCount": 8,
+    "speechRateWpm": 145,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 2,
+    "weakFormCount": 2,
+    "difficultyScore": 38,
+    "level": 4
+  },
+  {
+    "id": "rb_0004",
+    "text": "We ended up staying there for three hours.",
+    "meaningJa": "結局そこに3時間も滞在することになりました。",
+    "chunks": [
+      { "text": "We ended up", "roleJa": "結局〜することになった" },
+      { "text": "staying there", "roleJa": "そこに滞在することを" },
+      { "text": "for three hours", "roleJa": "3時間" }
+    ],
+    "functionTag": "narrative",
+    "patternTag": "S + ended up + V-ing",
+    "wordCount": 8,
+    "speechRateWpm": 130,
+    "chunkCount": 3,
+    "linkingCount": 2,
+    "reductionCount": 0,
+    "weakFormCount": 1,
+    "difficultyScore": 34,
+    "level": 3
+  },
+  {
+    "id": "rb_0005",
+    "text": "Do you mind if I ask a personal question?",
+    "meaningJa": "個人的な質問をしても構いませんか？",
+    "chunks": [
+      { "text": "Do you mind", "roleJa": "気にしますか" },
+      { "text": "if I ask", "roleJa": "もし私が尋ねたら" },
+      { "text": "a personal question", "roleJa": "個人的な質問を" }
+    ],
+    "functionTag": "permission",
+    "patternTag": "Do you mind + if...",
+    "wordCount": 9,
+    "speechRateWpm": 150,
+    "chunkCount": 3,
+    "linkingCount": 3,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 37,
+    "level": 4
+  },
+  {
+    "id": "rb_0006",
+    "text": "Is there anything else I can do for you?",
+    "meaningJa": "他に何か私にできることはありますか？",
+    "chunks": [
+      { "text": "Is there anything else", "roleJa": "他に何かありますか" },
+      { "text": "I can do for you", "roleJa": "私があなたのためにできる" }
+    ],
+    "functionTag": "offer",
+    "patternTag": "Is there + S + (relative)",
+    "wordCount": 9,
+    "speechRateWpm": 145,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 3,
+    "difficultyScore": 33,
+    "level": 3
+  },
+  {
+    "id": "rb_0007",
+    "text": "You might want to check the schedule again.",
+    "meaningJa": "もう一度スケジュールを確認したほうがいいかもしれません。",
+    "chunks": [
+      { "text": "You might want to", "roleJa": "〜したほうがいいかも" },
+      { "text": "check the schedule again", "roleJa": "もう一度予定を確認する" }
+    ],
+    "functionTag": "suggestion",
+    "patternTag": "S + might want to + V",
+    "wordCount": 8,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 1,
+    "weakFormCount": 1,
+    "difficultyScore": 32,
+    "level": 3
+  },
+  {
+    "id": "rb_0008",
+    "text": "It's usually better to book in advance.",
+    "meaningJa": "たいていの場合、事前に予約しておいたほうが良いです。",
+    "chunks": [
+      { "text": "It's usually better", "roleJa": "たいてい〜の方が良い" },
+      { "text": "to book in advance", "roleJa": "事前に予約するほうが" }
+    ],
+    "functionTag": "general_advice",
+    "patternTag": "It is + adj + to V",
+    "wordCount": 7,
+    "speechRateWpm": 130,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 0,
+    "weakFormCount": 2,
+    "difficultyScore": 30,
+    "level": 3
+  },
+  {
+    "id": "rb_0009",
+    "text": "I'm getting a little tired of this weather.",
+    "meaningJa": "この天気には少しうんざりしてきました。",
+    "chunks": [
+      { "text": "I'm getting a little tired", "roleJa": "少し飽き飽きしている" },
+      { "text": "of this weather", "roleJa": "この天気に" }
+    ],
+    "functionTag": "complaint",
+    "patternTag": "S + be getting + adj",
+    "wordCount": 8,
+    "speechRateWpm": 130,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 35,
+    "level": 4
+  },
+  {
+    "id": "rb_0010",
+    "text": "That sounds like exactly what we need right now.",
+    "meaningJa": "それこそまさに今、私たちに必要なものですね。",
+    "chunks": [
+      { "text": "That sounds like", "roleJa": "〜のように聞こえる" },
+      { "text": "exactly what we need", "roleJa": "まさに我々が必要なもの" },
+      { "text": "right now", "roleJa": "今まさに" }
+    ],
+    "functionTag": "agreement",
+    "patternTag": "That sounds like + N",
+    "wordCount": 9,
+    "speechRateWpm": 140,
+    "chunkCount": 3,
+    "linkingCount": 1,
+    "reductionCount": 1,
+    "weakFormCount": 1,
+    "difficultyScore": 36,
+    "level": 4
+  },
+  {
+    "id": "rb_0011",
+    "text": "The main reason is that I'm just curious.",
+    "meaningJa": "主な理由は、ただ私が好奇心を持っているからです。",
+    "chunks": [
+      { "text": "The main reason is", "roleJa": "主な理由は" },
+      { "text": "that I'm just curious", "roleJa": "単に好奇心があるということ" }
+    ],
+    "functionTag": "explanation",
+    "patternTag": "The reason is that...",
+    "wordCount": 9,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 0,
+    "weakFormCount": 2,
+    "difficultyScore": 34,
+    "level": 3
+  },
+  {
+    "id": "rb_0012",
+    "text": "I didn't mean to hurt your feelings.",
+    "meaningJa": "あなたの気持ちを傷つけるつもりはありませんでした。",
+    "chunks": [
+      { "text": "I didn't mean to", "roleJa": "〜するつもりはなかった" },
+      { "text": "hurt your feelings", "roleJa": "あなたの感情を傷つける" }
+    ],
+    "functionTag": "apology",
+    "patternTag": "S + didn't mean to + V",
+    "wordCount": 7,
+    "speechRateWpm": 130,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 1,
+    "weakFormCount": 1,
+    "difficultyScore": 30,
+    "level": 3
+  },
+  {
+    "id": "rb_0013",
+    "text": "We're planning to take a few days off.",
+    "meaningJa": "私たちは数日休みを取る予定です。",
+    "chunks": [
+      { "text": "We're planning to", "roleJa": "〜する予定だ" },
+      { "text": "take a few days off", "roleJa": "数日休暇を取ることを" }
+    ],
+    "functionTag": "statement_of_plan",
+    "patternTag": "S + be planning to + V",
+    "wordCount": 8,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 33,
+    "level": 3
+  },
+  {
+    "id": "rb_0014",
+    "text": "We're going to have to leave fairly soon.",
+    "meaningJa": "私たちはもうすぐ出発しなければなりません。",
+    "chunks": [
+      { "text": "We're going to have to", "roleJa": "〜しなければならないだろう" },
+      { "text": "leave fairly soon", "roleJa": "かなりすぐに発つ" }
+    ],
+    "functionTag": "statement_of_necessity",
+    "patternTag": "S + be going to + have to V",
+    "wordCount": 8,
+    "speechRateWpm": 150,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 2,
+    "weakFormCount": 2,
+    "difficultyScore": 39,
+    "level": 4
+  },
+  {
+    "id": "rb_0015",
+    "text": "Have you ever been to this place before?",
+    "meaningJa": "以前にこの場所へ来たことはありますか？",
+    "chunks": [
+      { "text": "Have you ever been", "roleJa": "今までにいたことはあるか" },
+      { "text": "to this place before", "roleJa": "以前この場所に" }
+    ],
+    "functionTag": "question_experience",
+    "patternTag": "Have you ever + p.p.",
+    "wordCount": 8,
+    "speechRateWpm": 140,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 32,
+    "level": 3
+  },
+  {
+    "id": "rb_0016",
+    "text": "Time flies so fast when you're having fun.",
+    "meaningJa": "楽しい時間はあっという間に過ぎますね。",
+    "chunks": [
+      { "text": "Time flies so fast", "roleJa": "時間はとても早く飛ぶ" },
+      { "text": "when you're having fun", "roleJa": "楽しんでいる時は" }
+    ],
+    "functionTag": "observation",
+    "patternTag": "S + V + when...",
+    "wordCount": 8,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 0,
+    "weakFormCount": 1,
+    "difficultyScore": 31,
+    "level": 3
+  },
+  {
+    "id": "rb_0017",
+    "text": "Let me know if you change your mind.",
+    "meaningJa": "もし気が変わったら教えてください。",
+    "chunks": [
+      { "text": "Let me know", "roleJa": "知らせてくれ" },
+      { "text": "if you change your mind", "roleJa": "もし気が変わったら" }
+    ],
+    "functionTag": "instruction",
+    "patternTag": "Imperative + if...",
+    "wordCount": 8,
+    "speechRateWpm": 140,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 1,
+    "difficultyScore": 32,
+    "level": 3
+  },
+  {
+    "id": "rb_0018",
+    "text": "It doesn't make any sense to me at all.",
+    "meaningJa": "私には全く意味がわかりません（納得いきません）。",
+    "chunks": [
+      { "text": "It doesn't make any sense", "roleJa": "それは全く意味をなさない" },
+      { "text": "to me at all", "roleJa": "私にとっては全然" }
+    ],
+    "functionTag": "opinion_negative",
+    "patternTag": "It doesn't make sense",
+    "wordCount": 9,
+    "speechRateWpm": 145,
+    "chunkCount": 2,
+    "linkingCount": 3,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 37,
+    "level": 4
+  },
+  {
+    "id": "rb_0019",
+    "text": "I haven't seen him in a long time.",
+    "meaningJa": "彼とはずいぶん長い間会っていません。",
+    "chunks": [
+      { "text": "I haven't seen him", "roleJa": "彼に会っていない" },
+      { "text": "in a long time", "roleJa": "長い間" }
+    ],
+    "functionTag": "statement_of_state",
+    "patternTag": "S + haven't + p.p.",
+    "wordCount": 8,
+    "speechRateWpm": 130,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 3,
+    "difficultyScore": 33,
+    "level": 3
+  },
+  {
+    "id": "rb_0020",
+    "text": "Would it be okay if I borrowed this?",
+    "meaningJa": "これをお借りしてもよろしいでしょうか？",
+    "chunks": [
+      { "text": "Would it be okay", "roleJa": "いいでしょうか" },
+      { "text": "if I borrowed this", "roleJa": "もしこれを借りても" }
+    ],
+    "functionTag": "permission_polite",
+    "patternTag": "Would it be okay + if...",
+    "wordCount": 8,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 1,
+    "difficultyScore": 34,
+    "level": 3
+  },
+  {
+    "id": "rb_0021",
+    "text": "I'm not sure I can make it on time.",
+    "meaningJa": "時間通りに間に合うかどうかわかりません。",
+    "chunks": [
+      { "text": "I'm not sure", "roleJa": "確信がない" },
+      { "text": "I can make it on time", "roleJa": "時間通りに都合がつくか" }
+    ],
+    "functionTag": "uncertainty",
+    "patternTag": "S + be not sure + (that)...",
+    "wordCount": 9,
+    "speechRateWpm": 140,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 0,
+    "weakFormCount": 2,
+    "difficultyScore": 35,
+    "level": 4
+  },
+  {
+    "id": "rb_0022",
+    "text": "You should've seen the look on his face.",
+    "meaningJa": "彼のあの時の顔、あなたに見せたかったですよ。",
+    "chunks": [
+      { "text": "You should've seen", "roleJa": "見るべきだった（見せたかった）" },
+      { "text": "the look on his face", "roleJa": "彼の顔の表情を" }
+    ],
+    "functionTag": "narrative_emphasis",
+    "patternTag": "S + should've + p.p.",
+    "wordCount": 8,
+    "speechRateWpm": 145,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 3,
+    "difficultyScore": 38,
+    "level": 4
+  },
+  {
+    "id": "rb_0023",
+    "text": "There's no point in worrying about it now.",
+    "meaningJa": "今さらそのことを心配しても意味がありません。",
+    "chunks": [
+      { "text": "There's no point", "roleJa": "意味がない" },
+      { "text": "in worrying about it", "roleJa": "それを心配することに" },
+      { "text": "now", "roleJa": "今さら" }
+    ],
+    "functionTag": "advice_comfort",
+    "patternTag": "There is no point in V-ing",
+    "wordCount": 8,
+    "speechRateWpm": 140,
+    "chunkCount": 3,
+    "linkingCount": 3,
+    "reductionCount": 0,
+    "weakFormCount": 1,
+    "difficultyScore": 36,
+    "level": 4
+  },
+  {
+    "id": "rb_0024",
+    "text": "It would be great if you could help me.",
+    "meaningJa": "手伝っていただけるととても助かります。",
+    "chunks": [
+      { "text": "It would be great", "roleJa": "素晴らしいだろう" },
+      { "text": "if you could help me", "roleJa": "もし手伝ってくれたら" }
+    ],
+    "functionTag": "request_indirect",
+    "patternTag": "It would be adj + if...",
+    "wordCount": 9,
+    "speechRateWpm": 140,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 2,
+    "weakFormCount": 2,
+    "difficultyScore": 35,
+    "level": 4
+  },
+  {
+    "id": "rb_0025",
+    "text": "It's not as difficult as it looks.",
+    "meaningJa": "見た目ほど難しくはありませんよ。",
+    "chunks": [
+      { "text": "It's not as difficult", "roleJa": "それほど難しくない" },
+      { "text": "as it looks", "roleJa": "見た目ほど" }
+    ],
+    "functionTag": "encouragement",
+    "patternTag": "not as + adj + as...",
+    "wordCount": 7,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 2,
+    "reductionCount": 1,
+    "weakFormCount": 2,
+    "difficultyScore": 31,
+    "level": 3
+  },
+  {
+    "id": "rb_0026",
+    "text": "I wonder what they are doing right now.",
+    "meaningJa": "彼らは今頃何をしているのかなあ。",
+    "chunks": [
+      { "text": "I wonder", "roleJa": "かなあと思う" },
+      { "text": "what they are doing", "roleJa": "彼らが何をしているか" },
+      { "text": "right now", "roleJa": "たった今" }
+    ],
+    "functionTag": "curiosity",
+    "patternTag": "I wonder + Wh-clause",
+    "wordCount": 8,
+    "speechRateWpm": 130,
+    "chunkCount": 3,
+    "linkingCount": 1,
+    "reductionCount": 0,
+    "weakFormCount": 2,
+    "difficultyScore": 30,
+    "level": 3
+  },
+  {
+    "id": "rb_0027",
+    "text": "Make sure you lock the door before leaving.",
+    "meaningJa": "出る前に必ずドアに鍵をかけてくださいね。",
+    "chunks": [
+      { "text": "Make sure", "roleJa": "確実にしてください" },
+      { "text": "you lock the door", "roleJa": "ドアに鍵をかけるのを" },
+      { "text": "before leaving", "roleJa": "去る前に" }
+    ],
+    "functionTag": "instruction",
+    "patternTag": "Make sure + S + V",
+    "wordCount": 8,
+    "speechRateWpm": 135,
+    "chunkCount": 3,
+    "linkingCount": 1,
+    "reductionCount": 0,
+    "weakFormCount": 1,
+    "difficultyScore": 33,
+    "level": 3
+  },
+  {
+    "id": "rb_0028",
+    "text": "I've been looking forward to meeting you.",
+    "meaningJa": "お会いできるのを楽しみにしていました。",
+    "chunks": [
+      { "text": "I've been looking forward", "roleJa": "ずっと楽しみにしていた" },
+      { "text": "to meeting you", "roleJa": "あなたに会うことを" }
+    ],
+    "functionTag": "greeting",
+    "patternTag": "S + have been -ing",
+    "wordCount": 7,
+    "speechRateWpm": 135,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 0,
+    "weakFormCount": 1,
+    "difficultyScore": 30,
+    "level": 3
+  },
+  {
+    "id": "rb_0029",
+    "text": "Does anyone know how to fix this problem?",
+    "meaningJa": "誰かこの問題の直し方を知っていますか？",
+    "chunks": [
+      { "text": "Does anyone know", "roleJa": "誰か知っていますか" },
+      { "text": "how to fix", "roleJa": "どうやって直すか" },
+      { "text": "this problem", "roleJa": "この問題を" }
+    ],
+    "functionTag": "question_open",
+    "patternTag": "Does anyone + V...",
+    "wordCount": 8,
+    "speechRateWpm": 140,
+    "chunkCount": 3,
+    "linkingCount": 1,
+    "reductionCount": 0,
+    "weakFormCount": 1,
+    "difficultyScore": 32,
+    "level": 3
+  },
+  {
+    "id": "rb_0030",
+    "text": "I promise I won't let you down.",
+    "meaningJa": "約束します、あなたをがっかりさせません。",
+    "chunks": [
+      { "text": "I promise", "roleJa": "約束する" },
+      { "text": "I won't let you down", "roleJa": "あなたを失望させないと" }
+    ],
+    "functionTag": "commitment",
+    "patternTag": "S + V + (that) S + V",
+    "wordCount": 7,
+    "speechRateWpm": 130,
+    "chunkCount": 2,
+    "linkingCount": 1,
+    "reductionCount": 1,
+    "weakFormCount": 1,
+    "difficultyScore": 30,
+    "level": 3
+  }
 ];
 
 // --- DOM Elements ---
@@ -68,9 +605,12 @@ let audioCtx;
 
 // --- State ---
 let currentRoundIndex = 0;
+let currentStageNumber = 1;
+let currentStageQuestions = [];
+let usedQuestionIds = new Set();
 let currentOutcomeIndex = 0; // Cycles 0 -> 1 -> 2 on retry
 let clearedCount = 0;
-let stageResults = Array(BATTLE_ROUNDS.length).fill(null);
+let stageResults = [];
 let lastRecordingDurationMs = 0;
 let missedQuestions = new Set();
 let isStageComplete = false;
@@ -81,7 +621,38 @@ let audioChunks = [];
 let userAudioUrl = null;
 
 // --- Initialization ---
+generateStageQuestions();
 initRound();
+
+function generateStageQuestions() {
+    // 1. Filter available questions (exclude used ones)
+    let availableQuestions = BATTLE_ROUNDS.filter(q => !usedQuestionIds.has(q.id));
+
+    // If not enough questions for a stage, reset history
+    if (availableQuestions.length < 5) {
+        usedQuestionIds.clear();
+        availableQuestions = [...BATTLE_ROUNDS];
+    }
+
+    // 2. Sort available questions by difficultyScore
+    const sorted = availableQuestions.sort((a, b) => (a.difficultyScore || 0) - (b.difficultyScore || 0));
+    
+    // 3. Select 5 questions (1 from each quintile for progressive difficulty)
+    const stageSize = 5;
+    currentStageQuestions = [];
+    const bucketSize = Math.floor(sorted.length / stageSize);
+    
+    for (let i = 0; i < stageSize; i++) {
+        let start = i * bucketSize;
+        let end = (i === stageSize - 1) ? sorted.length : (i + 1) * bucketSize;
+        const bucket = sorted.slice(start, end);
+        if (bucket.length > 0) {
+            const randomItem = bucket[Math.floor(Math.random() * bucket.length)];
+            usedQuestionIds.add(randomItem.id);
+            currentStageQuestions.push(randomItem);
+        }
+    }
+}
 
 // Warm up TTS on load to prevent first-time lag/failure
 if (window.speechSynthesis) {
@@ -92,7 +663,12 @@ if (window.speechSynthesis) {
 
 function initRound() {
     isBusy = false;
-    const roundData = BATTLE_ROUNDS[currentRoundIndex];
+
+    if (!currentStageQuestions || currentStageQuestions.length === 0) {
+        generateStageQuestions();
+    }
+
+    const roundData = currentStageQuestions[currentRoundIndex];
     targetText.innerText = roundData.text;
     youSaidText.innerText = "";
     isRecording = false;
@@ -104,7 +680,7 @@ scoreBadge.classList.remove('stage-total-badge');
 feedbackText.classList.remove('stage-score-list');
 scoreBadge.style.display = '';
 if (currentRoundIndex === 0) {
-    stageResults = Array(BATTLE_ROUNDS.length).fill(null);
+    stageResults = Array(currentStageQuestions.length).fill(null);
 }
     // Reset Views
     battleScreen.classList.remove('hidden');
@@ -122,6 +698,10 @@ btnRecord.classList.remove('recording-mode');
     recordingArea.classList.remove('pulsing');
     statusText.innerText = "Ready";
     btnNext.innerText = "Next Round";
+
+    // Update Stage Info
+    document.querySelector('.stage-info').innerText = `Stage ${currentStageNumber} - Round ${currentRoundIndex + 1}/${currentStageQuestions.length}`;
+
 btnRetry.classList.remove('hidden');
 btnNext.style.marginTop = "";
 isStageComplete = false;
@@ -215,7 +795,7 @@ function autoStartCurrentRound() {
 function showRoundCueAndStart() {
     countdownOverlay.classList.remove('hidden');
     countdownNum.textContent = `Round ${currentRoundIndex + 1}`;
-    statusText.innerText = `${currentRoundIndex + 1}/${BATTLE_ROUNDS.length}`;
+    statusText.innerText = `${currentRoundIndex + 1}/${currentStageQuestions.length}`;
 
     setTimeout(() => {
         countdownOverlay.classList.add('hidden');
@@ -226,28 +806,22 @@ function showRoundCueAndStart() {
 }
 
 btnNext.onclick = () => {
-    if (currentRoundIndex < BATTLE_ROUNDS.length - 1) {
+    // Check if we are starting a completely new stage (from "Stage Complete" screen)
+    if (currentRoundIndex === -1) {
+        generateStageQuestions();
+        currentRoundIndex = 0;
+        stageResults = Array(currentStageQuestions.length).fill(null);
+        initRound();
+        showRoundCueAndStart();
+        return;
+    }
+
+    if (currentRoundIndex < currentStageQuestions.length - 1) {
         currentRoundIndex++;
         initRound();
         showRoundCueAndStart();
     } else {
-        battleScreen.classList.add('hidden');
-        resultScreen.classList.remove('hidden');
-
-        diffContainer.innerHTML = '';
-        scoreBadge.style.display = 'none';
-        youSaidText.style.display = 'none';
-        diffContainer.parentElement.style.display = 'none';
-
-        resultTitle.innerText = "Stage Complete!";
-        resultTitle.style.color = "var(--primary)";
-        feedbackText.innerText = "5問おつかれさま！ New Stageで最初からもう一度できます。";
-
-        btnRetry.classList.add('hidden');
-        btnNext.classList.remove('hidden');
-        btnNext.innerText = "New Stage";
-
-        currentRoundIndex = -1;
+        transitionToStageComplete();
     }
 };
 
@@ -359,7 +933,7 @@ async function speakText(text, { rate = 0.95, pitch = 1, volume = 1, timeoutMs =
 // --- Core Logic ---
 
 async function playRealAudio(onComplete, onError) {
-    const text = BATTLE_ROUNDS[currentRoundIndex].text;
+    const text = currentStageQuestions[currentRoundIndex].text;
     console.log(`[Audio] Playing: "${text}"`);
 
     try {
@@ -467,7 +1041,7 @@ function finishRound(userText) {
     battleScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
 
-    const correctText = BATTLE_ROUNDS[currentRoundIndex].text;
+    const correctText = currentStageQuestions[currentRoundIndex].text;
     const diff = calculateDiff(correctText, userText);
     const retentionScore = calculateScore(diff);
 // Pass/fail is based on perfect retention only
@@ -499,11 +1073,12 @@ stageResults[currentRoundIndex] = {
 
     if (passed) {
         // Always play "Perfect!" first for consistency
+        const successMsg = getRandomSuccessMessage();
         playSuccessSound();
-        showSuccessAnimation("Perfect!", () => {
+        showSuccessAnimation(successMsg, () => {
             renderResultScreenContent();
 
-            if (currentRoundIndex >= BATTLE_ROUNDS.length - 1) {
+            if (currentRoundIndex >= currentStageQuestions.length - 1) {
                 // Final Round: Auto-transition
                 feedbackText.innerText = "正解！ステージクリア！";
                 btnNext.classList.add('hidden');
@@ -548,7 +1123,7 @@ function setupStageCompleteScreen() {
     }, 0);
 
     const lines = stageResults.map((item, index) => {
-        const text = item && item.text ? item.text : BATTLE_ROUNDS[index].text;
+        const text = item && item.text ? item.text : currentStageQuestions[index].text;
         const scoreText = (item && item.pronunciationScore != null)
             ? `${item.pronunciationScore}/20`
             : '-';
@@ -561,7 +1136,7 @@ function setupStageCompleteScreen() {
     // 合計点を上に大きく出す
     scoreBadge.style.display = '';
     scoreBadge.classList.add('stage-total-badge');
-    scoreBadge.innerText = `Total Pronunciation Score: ${totalScore}/${BATTLE_ROUNDS.length * 20}`;
+    scoreBadge.innerText = `Total Pronunciation Score: ${totalScore}/${currentStageQuestions.length * 20}`;
 
     // 各問の一覧は下に左揃え
     feedbackText.classList.add('stage-score-list');
@@ -572,6 +1147,7 @@ function setupStageCompleteScreen() {
     btnNext.innerText = "New Stage";
 btnNext.style.marginTop = "28px";
     currentRoundIndex = -1;
+    currentStageNumber++;
 }
 
 function showSuccessAnimation(text, onComplete) {
@@ -675,11 +1251,19 @@ function playStageClearSound() {
     playNote(1046.50, now + 0.45, 1.0); // C6
 }
 
+function getRandomSuccessMessage() {
+    const messages = ["Perfect!", "Excellent!", "Amazing!", "Great Job!", "Fantastic!", "Brilliant!"];
+    return messages[Math.floor(Math.random() * messages.length)];
+}
+
 // --- Diff Engine & Rendering ---
 
 function calculateDiff(correctText, userText) {
-    const c_tokens = tokenize(correctText);
-    const u_tokens = tokenize(userText || "");
+    const expandedCorrect = expandContractions(correctText);
+    const expandedUser = expandContractions(userText || "");
+    
+    const c_tokens = tokenize(expandedCorrect);
+    const u_tokens = tokenize(expandedUser);
     const result = [];
     let u_idx = 0;
 
@@ -745,4 +1329,29 @@ function calculateScore(diff) {
 
 // --- Helper Functions ---
 function tokenize(text) { return text ? text.trim().split(/\s+/) : []; }
-function normalize(text) { return text ? text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase() : ""; }
+function normalize(text) { return text ? text.replace(/['’"?,.\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase() : ""; }
+
+function expandContractions(text) {
+    if (!text) return "";
+    // Normalize apostrophes to ASCII single quote
+    let t = text.replace(/[’‘`]/g, "'");
+    
+    // Handle specific irregular contractions (case-insensitive)
+    t = t.replace(/\bwon't\b/gi, "will not");
+    t = t.replace(/\bcan't\b/gi, "can not");
+    t = t.replace(/\bcannot\b/gi, "can not");
+    t = t.replace(/\bshan't\b/gi, "shall not");
+    t = t.replace(/\blet's\b/gi, "let us");
+    
+    // Handle general suffixes
+    // Note: Using a space before replacement to ensure tokenization splits them
+    t = t.replace(/n't\b/gi, " not");
+    t = t.replace(/'re\b/gi, " are");
+    t = t.replace(/'m\b/gi, " am");
+    t = t.replace(/'ll\b/gi, " will");
+    t = t.replace(/'ve\b/gi, " have");
+    t = t.replace(/'d\b/gi, " would"); 
+    t = t.replace(/'s\b/gi, " is");
+    
+    return t;
+}
